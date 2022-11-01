@@ -172,6 +172,8 @@ const (
 	EnvLogFormat = "ARGOCD_LOG_FORMAT"
 	// EnvLogLevel log level that is defined by `--loglevel` option
 	EnvLogLevel = "ARGOCD_LOG_LEVEL"
+	// EnvLogDir is the directory where Argo CD logs are stored
+	EnvLogDir = "ARGOCD_LOG_DIR"
 )
 
 const (

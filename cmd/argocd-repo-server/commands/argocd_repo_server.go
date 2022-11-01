@@ -82,6 +82,7 @@ func NewCommand() *cobra.Command {
 		RunE: func(c *cobra.Command, args []string) error {
 			cli.SetLogFormat(cmdutil.LogFormat)
 			cli.SetLogLevel(cmdutil.LogLevel)
+			cli.SetLogFile(cliName, false)
 
 			if !disableTLS {
 				var err error
@@ -98,7 +99,7 @@ func NewCommand() *cobra.Command {
 			metricsServer := metrics.NewMetricsServer()
 			cacheutil.CollectMetrics(redisClient, metricsServer)
 			server, err := reposerver.NewServer(metricsServer, cache, tlsConfigCustomizer, repository.RepoServerInitConstants{
-				ParallelismLimit:                             parallelismLimit,
+				ParallelismLimit: parallelismLimit,
 				PauseGenerationAfterFailedGenerationAttempts: getPauseGenerationAfterFailedGenerationAttempts(),
 				PauseGenerationOnFailureForMinutes:           getPauseGenerationOnFailureForMinutes(),
 				PauseGenerationOnFailureForRequests:          getPauseGenerationOnFailureForRequests(),

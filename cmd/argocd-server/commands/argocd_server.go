@@ -74,6 +74,7 @@ func NewCommand() *cobra.Command {
 			cli.SetLogFormat(cmdutil.LogFormat)
 			cli.SetLogLevel(cmdutil.LogLevel)
 			cli.SetGLogLevel(glogLevel)
+			cli.SetLogFile(cliName, false)
 
 			config, err := clientConfig.ClientConfig()
 			errors.CheckError(err)

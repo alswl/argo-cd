@@ -21,6 +21,7 @@ func init() {
 func initConfig() {
 	cli.SetLogFormat(cmdutil.LogFormat)
 	cli.SetLogLevel(cmdutil.LogLevel)
+	cli.SetLogFile(cliName, false)
 }
 
 // NewCommand returns a new instance of an argocd command

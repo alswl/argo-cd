@@ -7,10 +7,15 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github.com/argoproj/argo-cd/v2/controller/sharding"
+	"github.com/argoproj/argo-cd/v2/util/env"
+	"gopkg.in/natefinch/lumberjack.v2"
 	"io/ioutil"
+	"math"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -163,6 +168,46 @@ func SetLogLevel(logLevel string) {
 	errors.CheckError(err)
 	os.Setenv(common.EnvLogLevel, level.String())
 	log.SetLevel(level)
+}
+
+// SetLogFile sets a local log file to standard logger
+func SetLogFile(app string, isSharding bool) {
+	envLogDir := os.Getenv(common.EnvLogDir)
+	if envLogDir == "" {
+		log.Info("No log directory specified, using stdout")
+		return
+	}
+	shard := -1
+	if isSharding {
+		shard = env.ParseNumFromEnv(common.EnvControllerShard, -1, -math.MaxInt32, math.MaxInt32)
+		if shard < 0 {
+			var err error
+			shard, err = sharding.InferShard()
+			errors.CheckError(err)
+		}
+	}
+	logPath := filepath.Join(envLogDir, app+".log")
+	if isSharding {
+		logPath = filepath.Join(envLogDir, app+"-"+strconv.Itoa(shard)+".log")
+	}
+
+	// open path as std
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	defer func() {
+		_ = f.Close()
+	}()
+	if err != nil {
+		log.Errorf("Unable to open log file %s: %v", logPath, err)
+		return
+	}
+	rotatedLog := &lumberjack.Logger{
+		Filename:   logPath,
+		MaxSize:    500, // megabytes
+		MaxBackups: 30,
+		MaxAge:     15,    //days
+		Compress:   false, // disabled by default
+	}
+	log.SetOutput(rotatedLog)
 }
 
 // SetGLogLevel set the glog level for the k8s go-client
